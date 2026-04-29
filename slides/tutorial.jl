@@ -7,8 +7,23 @@ using InteractiveUtils
 # ╔═╡ aed7ea62-3d79-11f1-9771-47315bb67abb
 using PlutoUI
 
+# ╔═╡ 258c62e8-c2ad-4de9-9ea2-0da1d68167c7
+using DataStructures
+
+# ╔═╡ 93b48d96-9b0f-452a-a329-0168091093c1
+using BenchmarkTools
+
+# ╔═╡ f1f57089-7c5a-4578-9d89-9cfaa0f394a6
+using TOML
+
+# ╔═╡ 33a4278c-31f2-470f-bfb7-3aff2a5e5149
+using LinearAlgebra
+
 # ╔═╡ 5d973c45-631e-4f22-bdbb-b2fdb03a864f
 using GameTheory
+
+# ╔═╡ 30650d03-79d2-4914-a9a2-40ca28db56d7
+
 
 # ╔═╡ 73e09561-3123-4111-af82-c37ac72f4f68
 PlutoUI.TableOfContents()
@@ -256,6 +271,18 @@ vec5[5:(end -1)]
 # ╔═╡ 178a5cd6-1cb6-44ef-85cf-713182ac6f7d
 vec5[4:8]
 
+# ╔═╡ 2f426d32-7e8e-4852-ba3e-b13720c196a8
+v2 = Set([1,1,3,4,5,6,6])
+
+# ╔═╡ 7a0e3a92-8e50-420e-b525-f6e4942d24d1
+2 ∈ v2
+
+# ╔═╡ aabe2473-14c2-4426-9ebd-477773e971af
+v3 = SortedSet([1,9,8,7])
+
+# ╔═╡ 143e9117-54e2-4f60-bdb2-f0c2a3e9db84
+push!(v3, 3)
+
 # ╔═╡ 46f3c084-c7cf-4559-aab0-55d3c3505da6
 struct Student
         name::String
@@ -295,6 +322,113 @@ m1.group = 4
 
 # ╔═╡ 6614bd1b-4c3b-4212-99c0-2de0b06798b3
 m1
+
+# ╔═╡ 30e4e06e-3f1f-4a60-a011-6e64f4ceb328
+d1 = Dict{Student, Int32}()
+
+# ╔═╡ ad5cd675-3910-48e3-a0a7-4d8deb8f814c
+student1 = Student("Emmanuel Dargne", 2, ["Calculus", "Advanced Logic", "Algorithm 2", "Data Structures"])
+
+# ╔═╡ 30acaf11-4e38-4544-855a-29b054a3ffa8
+push!(d1, student1 => 1)
+
+# ╔═╡ 36d35a05-4888-46e9-9315-40e7eca02da5
+length(d1)
+
+# ╔═╡ 5791ba42-d486-467a-98df-80c64f1258f7
+d1[student1]
+
+# ╔═╡ 40593a01-59fd-496d-bd51-3e6d17e6c252
+d2 = Dict{Member, String}()
+
+# ╔═╡ ab0d033e-b692-46ff-935a-fd00d2b49ad8
+Base.isequal(m1::Member, m2::Member) = isequal(m1.group, m2.group)
+
+# ╔═╡ 587914e4-a333-4ae1-a4f4-4a6316934cb3
+Base.hash(m::Member, h::UInt) = hash(m.group, h)
+
+# ╔═╡ 6b2bc55b-f96e-4750-b326-e1b12d939824
+
+
+# ╔═╡ b266ff79-1496-4f77-bc15-cc27ce31bc62
+member2 = Member(student1, 5)
+
+# ╔═╡ f94dcb95-1993-4ca1-bb3f-fe8bf771526a
+push!(d2, member2 => "First member")
+
+# ╔═╡ e22faded-f34e-4699-b188-f3c4e71909aa
+d2[member2]
+
+# ╔═╡ ba1f073e-b7ba-4cc2-b18b-f62cc6c6119e
+member3 = Member(Student("Erol Wong", 3, ["Philosophy", "Literature"]), 5)
+
+# ╔═╡ 12b0f5d3-bc56-4157-a231-953f67ec9e33
+push!(d2, member3 => "Second member")
+
+# ╔═╡ c134228e-fa1b-47b6-a9d6-1c49c9f280b4
+length(d2)
+
+# ╔═╡ faceec7f-cde5-418f-9b57-9a83f6fe93f6
+d2[member2]
+
+# ╔═╡ 1faa6854-833f-401c-a5da-a6347e0ee1ad
+d2[member3]
+
+# ╔═╡ 4b3df760-96d3-459a-b168-19c617971d38
+struct VARWorkload
+        id::Symbol
+        req::Symbol
+end
+
+# ╔═╡ e1c017b4-957e-4985-8c23-de6799ed4a9a
+mutable struct VARNode
+        state::Tuple{VARWorkload, Symbol}
+        wl_count::Int
+        reward::Float64
+        alloc_history::Dict{VARWorkload, Symbol}
+        parent::Union{Nothing,VARNode}
+end
+
+# ╔═╡ f15128cb-d562-4628-8cd0-3fdef4b43ae8
+function Base.isequal(n1::VARNode, n2::VARNode)
+        st1 = n1.state
+        st2 = n2.state
+        return st1[1] == st2[1] && st1[2] == st2[2]
+end
+
+# ╔═╡ 5cb19072-5bf2-437a-b61f-2b268eb9c00c
+function Base.hash(n::VARNode, h::UInt)
+        st = n.state 
+        n_wl = st[1]
+    return Base.hash(n_wl.id, Base.hash(n.wl_count, h))
+end
+
+# ╔═╡ b0ac2f0b-bd6d-4b56-8860-6509bc0ce1c7
+struct PStudent{T}
+	name::String
+	f::T
+end
+
+# ╔═╡ 1cf18d6a-0140-4273-942f-0c8c8137ea00
+ps1 = PStudent{Float64}("James", 4.5)
+
+# ╔═╡ a069cde2-8008-4864-8364-413183a0fc1e
+ps2 = PStudent{String}("Bob", "Uni")
+
+# ╔═╡ d53a6a22-aba7-43cf-b3d6-50eec66a45ab
+ps3 = PStudent{Int64}("Renne", 4)
+
+# ╔═╡ b17257b6-669e-42e8-8f57-8fece8e0d5e4
+struct PStudent2{T <: Real}
+	name::String
+	val::T
+end
+
+# ╔═╡ 755784a9-019d-4fa1-ac25-e5e6321171b1
+ps4 = PStudent2{Int32}("Colen", 5)
+
+# ╔═╡ a27df6b8-d678-4c27-97fe-ff4cfb0516e2
+
 
 # ╔═╡ 3355f9fb-b586-4531-a489-20a357654806
 md"## Control Flow"
@@ -364,13 +498,33 @@ filter(x -> iseven(x), vec4)
 md"## Functions"
 
 # ╔═╡ 18dc9a0a-334b-41e3-94ed-5a2e1a5804c2
-function greetings(name)
+function greetings(name::String)
         first_part = "Hello "
         return first_part * name * ":-)"
 end
 
+# ╔═╡ 5380db3d-621d-49dc-86d5-573179558868
+function greetings(val::Int64)
+	return val + 4
+end
+
+# ╔═╡ 13369048-fed2-4fc1-8a45-1969c646aa43
+
+
 # ╔═╡ b1174cab-cdfa-4dd3-b59f-9a72a9c912df
 greetings("Paul")
+
+# ╔═╡ c188c007-53d4-4525-aa8a-3fcd1e875a1a
+greetings(4)
+
+# ╔═╡ f668ecbe-23f0-489a-bfb2-d22120172bcb
+@btime(greetings("Liam"))
+
+# ╔═╡ a8af6868-90c4-4026-910d-dd505f331070
+@benchmark greetings(50)
+
+# ╔═╡ d5efd9d5-bcc7-4034-ad83-4cb51502ffba
+
 
 # ╔═╡ a5cf8924-427f-453c-95a9-40d7df2455ff
 muller = x -> x^2
@@ -418,7 +572,7 @@ subject(st1, 5)
 md"## I/O"
 
 # ╔═╡ 5292a470-7ca6-4da6-a0da-7d6dee290256
-open("/Users/jequo/Desktop/essai.txt") do f
+open("essai.txt") do f
   line = 0   
   while ! eof(f)  
      s = readline(f)          
@@ -428,10 +582,22 @@ open("/Users/jequo/Desktop/essai.txt") do f
 end
 
 # ╔═╡ 6732d63e-9096-49d7-a50d-6bde507235ba
-open("/Users/jequo/Desktop/essai2.txt", "w") do io
+open("essai2.txt", "w") do io
     write(io, "Game Theory session!")
     println(io, " New line to file.")
 end
+
+# ╔═╡ f20cbad5-26b7-4b73-bdf8-b8bec9453628
+data = TOML.parsefile("tomleg.toml")
+
+# ╔═╡ 4858abb5-ccbf-4945-ad7a-527b6d6fbeb7
+println(data["name"])
+
+# ╔═╡ 14e7edfe-4616-4241-810c-e2685edee697
+println(data["compat"]["julia"])
+
+# ╔═╡ 6e234afd-c12e-47d6-9642-43c79f20a3f0
+
 
 # ╔═╡ 9b59c5bb-8c22-46fc-b571-1b32eb390226
 md"## Game Theory Example"
@@ -473,15 +639,33 @@ g2 = NormalFormGame(bimatrix_g2)
 pure_nash(g2)
 
 # ╔═╡ 505fa378-b76f-485c-aebc-941693cf652d
+md"## Solve System of Linear Equations"
+
+# ╔═╡ 24520f93-2bc7-44e5-be45-5da8ed2897c4
+A1 = [4 2; 1 3]
+
+# ╔═╡ 753ab3ea-e1c4-4f89-9ac6-dd3608984d6f
+B1 = [1,4]
+
+# ╔═╡ a97464c1-3a99-4d4f-9c2f-4bf7af369786
+A1 \ B1
+
+# ╔═╡ bf48a76f-0af0-4c77-9e00-b874e010c53d
 
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 GameTheory = "64a4ffa8-f47c-4a47-8dad-aee7aadc3b51"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [compat]
+BenchmarkTools = "~1.8.0"
+DataStructures = "~0.19.4"
 GameTheory = "~0.5.0"
 PlutoUI = "~0.7.58"
 """
@@ -492,7 +676,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "bb16a248509b3635fb3d60e9eeb533ad34ca6bea"
+project_hash = "e86376e47411bb59409ac2c436917cf5238e998b"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -1981,6 +2165,11 @@ version = "17.7.0+0"
 
 # ╔═╡ Cell order:
 # ╠═aed7ea62-3d79-11f1-9771-47315bb67abb
+# ╠═258c62e8-c2ad-4de9-9ea2-0da1d68167c7
+# ╠═93b48d96-9b0f-452a-a329-0168091093c1
+# ╠═f1f57089-7c5a-4578-9d89-9cfaa0f394a6
+# ╠═33a4278c-31f2-470f-bfb7-3aff2a5e5149
+# ╠═30650d03-79d2-4914-a9a2-40ca28db56d7
 # ╠═73e09561-3123-4111-af82-c37ac72f4f68
 # ╠═9ad7781f-8eba-42e4-886f-5cbb607174a0
 # ╠═eae15ce2-04a2-4c6e-8521-8e7216dd16c0
@@ -2056,6 +2245,10 @@ version = "17.7.0+0"
 # ╠═e1914a3c-2705-4474-b929-6de1eb759200
 # ╠═b8f7789f-98c4-4d48-98da-9f77d3b53e53
 # ╠═178a5cd6-1cb6-44ef-85cf-713182ac6f7d
+# ╠═2f426d32-7e8e-4852-ba3e-b13720c196a8
+# ╠═7a0e3a92-8e50-420e-b525-f6e4942d24d1
+# ╠═aabe2473-14c2-4426-9ebd-477773e971af
+# ╠═143e9117-54e2-4f60-bdb2-f0c2a3e9db84
 # ╠═46f3c084-c7cf-4559-aab0-55d3c3505da6
 # ╠═c48d5315-079f-489c-81fd-c3daf328ec59
 # ╠═e5c1ee45-266d-48a1-960f-a659dd9b8190
@@ -2067,6 +2260,34 @@ version = "17.7.0+0"
 # ╠═ecf37e05-229c-4e14-99bf-0b4140eae34d
 # ╠═9fec0bcf-162d-4201-ad32-89ac3d79d825
 # ╠═6614bd1b-4c3b-4212-99c0-2de0b06798b3
+# ╠═30e4e06e-3f1f-4a60-a011-6e64f4ceb328
+# ╠═ad5cd675-3910-48e3-a0a7-4d8deb8f814c
+# ╠═30acaf11-4e38-4544-855a-29b054a3ffa8
+# ╠═36d35a05-4888-46e9-9315-40e7eca02da5
+# ╠═5791ba42-d486-467a-98df-80c64f1258f7
+# ╠═40593a01-59fd-496d-bd51-3e6d17e6c252
+# ╠═ab0d033e-b692-46ff-935a-fd00d2b49ad8
+# ╠═587914e4-a333-4ae1-a4f4-4a6316934cb3
+# ╠═6b2bc55b-f96e-4750-b326-e1b12d939824
+# ╠═b266ff79-1496-4f77-bc15-cc27ce31bc62
+# ╠═f94dcb95-1993-4ca1-bb3f-fe8bf771526a
+# ╠═e22faded-f34e-4699-b188-f3c4e71909aa
+# ╠═ba1f073e-b7ba-4cc2-b18b-f62cc6c6119e
+# ╠═12b0f5d3-bc56-4157-a231-953f67ec9e33
+# ╠═c134228e-fa1b-47b6-a9d6-1c49c9f280b4
+# ╠═faceec7f-cde5-418f-9b57-9a83f6fe93f6
+# ╠═1faa6854-833f-401c-a5da-a6347e0ee1ad
+# ╠═4b3df760-96d3-459a-b168-19c617971d38
+# ╠═e1c017b4-957e-4985-8c23-de6799ed4a9a
+# ╠═f15128cb-d562-4628-8cd0-3fdef4b43ae8
+# ╠═5cb19072-5bf2-437a-b61f-2b268eb9c00c
+# ╠═b0ac2f0b-bd6d-4b56-8860-6509bc0ce1c7
+# ╠═1cf18d6a-0140-4273-942f-0c8c8137ea00
+# ╠═a069cde2-8008-4864-8364-413183a0fc1e
+# ╠═d53a6a22-aba7-43cf-b3d6-50eec66a45ab
+# ╠═b17257b6-669e-42e8-8f57-8fece8e0d5e4
+# ╠═755784a9-019d-4fa1-ac25-e5e6321171b1
+# ╠═a27df6b8-d678-4c27-97fe-ff4cfb0516e2
 # ╠═3355f9fb-b586-4531-a489-20a357654806
 # ╠═18e455e7-5e9c-4ae6-bbdf-4ac0d9a02952
 # ╠═5e732a57-9c3f-4fa9-876f-231e17ec8b06
@@ -2082,7 +2303,13 @@ version = "17.7.0+0"
 # ╠═35d77366-0702-43d4-ab56-c574834c60a6
 # ╠═d5afc062-5794-4e1a-856b-147ebaa71d67
 # ╠═18dc9a0a-334b-41e3-94ed-5a2e1a5804c2
+# ╠═5380db3d-621d-49dc-86d5-573179558868
+# ╠═13369048-fed2-4fc1-8a45-1969c646aa43
 # ╠═b1174cab-cdfa-4dd3-b59f-9a72a9c912df
+# ╠═c188c007-53d4-4525-aa8a-3fcd1e875a1a
+# ╠═f668ecbe-23f0-489a-bfb2-d22120172bcb
+# ╠═a8af6868-90c4-4026-910d-dd505f331070
+# ╠═d5efd9d5-bcc7-4034-ad83-4cb51502ffba
 # ╠═a5cf8924-427f-453c-95a9-40d7df2455ff
 # ╠═489cba22-e38c-4fff-bd0d-f728c14a7d0d
 # ╠═f4139fdd-0d59-43ca-9654-4d86f2d122f0
@@ -2098,6 +2325,10 @@ version = "17.7.0+0"
 # ╠═1e041747-6cb0-426a-9a5e-ae382e262356
 # ╠═5292a470-7ca6-4da6-a0da-7d6dee290256
 # ╠═6732d63e-9096-49d7-a50d-6bde507235ba
+# ╠═f20cbad5-26b7-4b73-bdf8-b8bec9453628
+# ╠═4858abb5-ccbf-4945-ad7a-527b6d6fbeb7
+# ╠═14e7edfe-4616-4241-810c-e2685edee697
+# ╠═6e234afd-c12e-47d6-9642-43c79f20a3f0
 # ╠═9b59c5bb-8c22-46fc-b571-1b32eb390226
 # ╠═5d973c45-631e-4f22-bdbb-b2fdb03a864f
 # ╠═371a8358-91d9-4a2c-8eb3-fbdaaa6b2ccc
@@ -2113,5 +2344,9 @@ version = "17.7.0+0"
 # ╠═2e53930d-367b-4ddd-8c0c-052b17f5028f
 # ╠═c136fcd7-e9d0-47c6-afb0-c55275852cc1
 # ╠═505fa378-b76f-485c-aebc-941693cf652d
+# ╠═24520f93-2bc7-44e5-be45-5da8ed2897c4
+# ╠═753ab3ea-e1c4-4f89-9ac6-dd3608984d6f
+# ╠═a97464c1-3a99-4d4f-9c2f-4bf7af369786
+# ╠═bf48a76f-0af0-4c77-9e00-b874e010c53d
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
